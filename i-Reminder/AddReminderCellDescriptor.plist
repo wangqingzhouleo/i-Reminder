@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<array>
+		<dict>
+			<key>text</key>
+			<string></string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>ReminderTitleCell</string>
+		</dict>
+	</array>
+	<array>
+		<dict>
+			<key>text</key>
+			<string></string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>ReminderNoteCell</string>
+		</dict>
+		<dict>
+			<key>text</key>
+			<string>Due date</string>
+			<key>isExpandable</key>
+			<true/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>ReminderDueDateCell</string>
+		</dict>
+		<dict>
+			<key>text</key>
+			<string></string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<false/>
+			<key>cellIdentifier</key>
+			<string>DatePickerCell</string>
+		</dict>
+	</array>
+</array>
+</plist>

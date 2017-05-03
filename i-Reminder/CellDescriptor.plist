@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<array>
+		<dict>
+			<key>text</key>
+			<string></string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>CategoryTitleCell</string>
+		</dict>
+		<dict>
+			<key>text</key>
+			<string>Pick a color</string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>CategoryColorCell</string>
+		</dict>
+		<dict>
+			<key>text</key>
+			<string>Choose a location</string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>ChooseLocationCell</string>
+		</dict>
+	</array>
+	<array>
+		<dict>
+			<key>text</key>
+			<string>Remind me at the location</string>
+			<key>isExpandable</key>
+			<true/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<true/>
+			<key>cellIdentifier</key>
+			<string>NotificationCell</string>
+		</dict>
+		<dict>
+			<key>text</key>
+			<string>Notification radius</string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<false/>
+			<key>cellIdentifier</key>
+			<string>NotificationRadiusCell</string>
+		</dict>
+		<dict>
+			<key>text</key>
+			<string></string>
+			<key>isExpandable</key>
+			<false/>
+			<key>isExpanded</key>
+			<false/>
+			<key>isVisible</key>
+			<false/>
+			<key>cellIdentifier</key>
+			<string>NotificationMethodCell</string>
+		</dict>
+	</array>
+</array>
+</plist>
