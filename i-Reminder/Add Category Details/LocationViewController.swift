@@ -9,6 +9,30 @@
 import UIKit
 import MapKit
 import CoreLocation
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIGestureRecognizerDelegate {
     
@@ -44,7 +68,7 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         
         // Configure the search controller
         // Source https://www.thorntech.com/2016/01/how-to-search-for-location-using-apples-mapkit/
-        let searchResultTable = storyboard!.instantiateViewControllerWithIdentifier("SearchResultTableViewController") as! SearchResultTableViewController
+        let searchResultTable = storyboard!.instantiateViewController(withIdentifier: "SearchResultTableViewController") as! SearchResultTableViewController
         searchController = UISearchController(searchResultsController: searchResultTable)
         searchController.searchResultsUpdater = searchResultTable
         let searchBar = searchController.searchBar
@@ -57,10 +81,10 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         searchResultTable.mapView = mapView
         searchResultTable.handleMapSearchDelegate = self
         
-        mapView.showsUserLocation = CLLocationManager.authorizationStatus() == .AuthorizedAlways || CLLocationManager.authorizationStatus() == .AuthorizedWhenInUse
+        mapView.showsUserLocation = CLLocationManager.authorizationStatus() == .authorizedAlways || CLLocationManager.authorizationStatus() == .authorizedWhenInUse
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         // If user is adding a new category, then set map region to current location. Otherwise set to category location.
         super.viewWillAppear(animated)
         let annotation = delegate?.annotation ?? nil
@@ -78,7 +102,7 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         }
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         locationManager.stopUpdatingLocation()
         delegate?.resignFirstResponder()
@@ -90,14 +114,14 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         // Dispose of any resources that can be recreated.
     }
     
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-        if status == .AuthorizedWhenInUse {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse {
             locationManager.requestLocation()
         }
-        mapView.showsUserLocation = status == .AuthorizedAlways || status == .AuthorizedWhenInUse
+        mapView.showsUserLocation = status == .authorizedAlways || status == .authorizedWhenInUse
     }
     
-    func dropPinZoomIn(placemark: MKPlacemark){
+    func dropPinZoomIn(_ placemark: MKPlacemark){
         // clear existing pins
         mapView.removeAnnotations(mapView.annotations)
         let annotation = MKPointAnnotation()
@@ -115,15 +139,15 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         delegate?.chooseLocationCell.detailTextLabel?.text = annotation.title!
     }
     
-    func dropPinByLongPress(gesture: UILongPressGestureRecognizer)
+    func dropPinByLongPress(_ gesture: UILongPressGestureRecognizer)
     {
         // Implement drop pin on the map by long press
         // Source http://stackoverflow.com/questions/30858360/adding-a-pin-annotation-to-a-map-view-on-a-long-press-in-swift
-        if gesture.state == UIGestureRecognizerState.Began
+        if gesture.state == UIGestureRecognizerState.began
         {
             mapView.removeAnnotations(mapView.annotations)
-            let touchPoint = gesture.locationInView(mapView)
-            let coordinate = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
+            let touchPoint = gesture.location(in: mapView)
+            let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
             
@@ -228,7 +252,7 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
 //        }
 //    }
     
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if annotation.isEqual(mapView.userLocation)
         {
             // Do not change default annotation for user locaiton.
@@ -238,7 +262,7 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         {
             let view = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil)
             view.pinTintColor = delegate?.categoryColorCell.textLabel?.textColor
-            view.enabled = true
+            view.isEnabled = true
             view.canShowCallout = true
             view.animatesDrop = true
             
@@ -246,9 +270,9 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         }
     }
     
-    func mapView(mapView: MKMapView, didAddAnnotationViews views: [MKAnnotationView]) {
+    func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         // Select the annotation automatically after 0.5 seconds.
-        performSelector(#selector(self.selectPin), withObject: nil, afterDelay: 0.5)
+        perform(#selector(self.selectPin), with: nil, afterDelay: 0.5)
     }
     
     func selectPin()
@@ -262,11 +286,11 @@ class LocationViewController: UIViewController, MKMapViewDelegate, CLLocationMan
         }
     }
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 //        searchRegionCenter = manager.location?.coordinate
     }
     
-    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         
     }
 

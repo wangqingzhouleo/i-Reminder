@@ -22,16 +22,16 @@ func fetchCategorysFromCoreData() -> [Category]
 {
     tmpCategoryList.removeAll()
     // Retreive the data from database.
-    let fetchRequest = NSFetchRequest()
-    let entityDescription = NSEntityDescription.entityForName("Category", inManagedObjectContext: managedObject)
+    let fetchRequest = NSFetchRequest<NSFetchRequestResult>()
+    let entityDescription = NSEntityDescription.entity(forEntityName: "Category", in: managedObject)
     fetchRequest.entity = entityDescription
     
     // Try to retrieve data from entity.
     do
     {
-        tmpCategoryList = try managedObject.executeFetchRequest(fetchRequest) as! [Category]
-        tmpCategoryList.sortInPlace({
-            return $0.index.integerValue < $1.index.integerValue
+        tmpCategoryList = try managedObject.fetch(fetchRequest) as! [Category]
+        tmpCategoryList.sort(by: {
+            return $0.index.intValue < $1.index.intValue
         })
     }
     catch
@@ -47,16 +47,16 @@ func loadCurrentReminderList(inCategory category: Category) -> [Reminder]
 {
     var list = category.reminderList.allObjects as! [Reminder]
     
-    list.sortInPlace({
+    list.sort(by: {
         if $0.completed.boolValue != $1.completed.boolValue
         {
             // If completion state is not same, then display not completed reminder first
-            return $0.completed.integerValue < $1.completed.integerValue
+            return $0.completed.intValue < $1.completed.intValue
         }
         else if $0.hasDueDate.boolValue && $1.hasDueDate.boolValue
         {
             // If both reminders have due date, then display the earliest first
-            return $0.dueDate!.compare($1.dueDate!) == NSComparisonResult.OrderedAscending
+            return $0.dueDate!.compare($1.dueDate! as Date) == ComparisonResult.orderedAscending
         }
         else if !$0.hasDueDate.boolValue && !$1.hasDueDate.boolValue
         {
@@ -66,7 +66,7 @@ func loadCurrentReminderList(inCategory category: Category) -> [Reminder]
         else
         {
             // If only one has due date, then display reminder has due date first
-            return $0.hasDueDate.integerValue > $1.hasDueDate.integerValue
+            return $0.hasDueDate.intValue > $1.hasDueDate.intValue
         }
     })
     
@@ -77,7 +77,7 @@ func resetCategoryListOrder()
 {
     for i in 0..<tmpCategoryList.count
     {
-        tmpCategoryList[i].index = i
+        tmpCategoryList[i].index = NSNumber(i)
     }
 }
 
@@ -95,7 +95,7 @@ func saveData()
 
 // Parse MKPlacemark to address
 // Source from https://www.thorntech.com/2016/01/how-to-search-for-location-using-apples-mapkit/
-func parseAddress(selectedItem:MKPlacemark) -> String {
+func parseAddress(_ selectedItem:MKPlacemark) -> String {
     
     // put a space between "4" and "Melrose Place"
     let firstSpace = (selectedItem.subThoroughfare != nil &&

@@ -17,21 +17,21 @@ class DatePickerCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
         
-        datePicker.addTarget(self, action: #selector(self.datePickerValueChanged(_:)), forControlEvents: .ValueChanged)
+        datePicker.addTarget(self, action: #selector(self.datePickerValueChanged(_:)), for: .valueChanged)
         datePicker.minuteInterval = 5
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
     
-    func datePickerValueChanged(datePicker: UIDatePicker)
+    func datePickerValueChanged(_ datePicker: UIDatePicker)
     {
-        let formatter = NSDateFormatter()
+        let formatter = DateFormatter()
         formatter.dateFormat = "EEE, dd/MM/yyyy, HH:mm"
-        delegate?.reminderDueDateCell?.dueDateLabel.text = formatter.stringFromDate(datePicker.date)
+        delegate?.reminderDueDateCell?.dueDateLabel.text = formatter.string(from: datePicker.date)
     }
 
 }

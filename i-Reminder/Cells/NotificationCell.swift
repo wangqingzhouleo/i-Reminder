@@ -21,14 +21,14 @@ class NotificationCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
     
-    @IBAction func toggleNotification(sender: UISwitch) {
-        if sender.on == previousValue
+    @IBAction func toggleNotification(_ sender: UISwitch) {
+        if sender.isOn == previousValue
         {
             return
         }

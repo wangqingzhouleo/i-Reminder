@@ -17,7 +17,7 @@ extension Reminder {
     @NSManaged var title: String
     @NSManaged var note: String?
     @NSManaged var hasDueDate: NSNumber
-    @NSManaged var dueDate: NSDate?
+    @NSManaged var dueDate: Date?
     @NSManaged var completed: NSNumber
     @NSManaged var inCategory: Category?
 

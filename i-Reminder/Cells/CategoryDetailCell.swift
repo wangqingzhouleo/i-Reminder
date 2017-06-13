@@ -13,7 +13,7 @@ class CategoryDetailCell: UITableViewCell {
     @IBOutlet weak var tagButton: RadioButton!
     @IBOutlet weak var reminderLabel: UILabel!
     
-    var indexPath: NSIndexPath?
+    var indexPath: IndexPath?
     var delegate: CategoryDetailTableViewController?
     
     override func awakeFromNib() {
@@ -21,13 +21,13 @@ class CategoryDetailCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
 
-    @IBAction func tapButtonAction(sender: AnyObject) {
+    @IBAction func tapButtonAction(_ sender: AnyObject) {
         delegate?.tapButton(indexPath!)
     }
 }

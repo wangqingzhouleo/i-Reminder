@@ -27,9 +27,9 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
     var mapDelegate: MapMasterViewController?
     var annotation: MKPointAnnotation?
     var categoryToEdit: Category?
-    var indexPathToEdit: NSIndexPath?
-    let largeSize = CGSizeMake(350, 420)
-    let smallSize = CGSizeMake(350, 320)
+    var indexPathToEdit: IndexPath?
+    let largeSize = CGSize(width: 350, height: 420)
+    let smallSize = CGSize(width: 350, height: 320)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,7 +49,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         tableView.contentInset.top = 20
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         adjustContentSize()
     }
@@ -61,17 +61,17 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return cellDescriptors.count
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return visibleCellsPerSection[section].count
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let currentCell = getCellDescriptorForIndexPath(indexPath)
         let cellId = currentCell["cellIdentifier"] as! String
         
@@ -79,37 +79,37 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         // If this view is called from category list table rather than add new category, then categoryToEdit must not be nil, so load data for a particular category.
         switch cellId {
         case "CategoryTitleCell":
-            categoryTitleCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as! CategoryTitleCell
+            categoryTitleCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! CategoryTitleCell
             categoryTitleCell.delegate = self
             categoryTitleCell.inputTitleTextField.text = categoryToEdit?.title ?? nil
             
             return categoryTitleCell
         case "CategoryColorCell":
-            categoryColorCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath)
+            categoryColorCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
             categoryColorCell.textLabel?.text = currentCell["text"] as? String
             // Set default color label to red
             if categoryToEdit != nil
             {
-                categoryColorCell.textLabel?.textColor = NSKeyedUnarchiver.unarchiveObjectWithData(categoryToEdit!.color) as! UIColor
+                categoryColorCell.textLabel?.textColor = NSKeyedUnarchiver.unarchiveObject(with: categoryToEdit!.color as Data) as! UIColor
             }
             else
             {
-                categoryColorCell.textLabel?.textColor = UIColor.redColor()
+                categoryColorCell.textLabel?.textColor = UIColor.red
             }
             
             return categoryColorCell
         case "ChooseLocationCell":
-            chooseLocationCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath)
+            chooseLocationCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
             chooseLocationCell.textLabel?.text = currentCell["text"] as? String
             chooseLocationCell.detailTextLabel?.text = categoryToEdit == nil ? (annotation?.title ?? nil) : categoryToEdit?.annotationTitle
-            chooseLocationCell.detailTextLabel?.textColor = UIColor.grayColor()
+            chooseLocationCell.detailTextLabel?.textColor = UIColor.gray
             
             return chooseLocationCell
         case "NotificationCell":
-            notificationCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as! NotificationCell
+            notificationCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! NotificationCell
             notificationCell.notificationLabel.text = currentCell["text"] as? String
             notificationCell.remindMeSwitch.setOn(categoryToEdit?.remindMe.boolValue ?? false, animated: true)
-            if let remindMe = categoryToEdit?.remindMe.boolValue where categoryToEdit != nil
+            if let remindMe = categoryToEdit?.remindMe.boolValue, categoryToEdit != nil
             {
                 if remindMe
                 {
@@ -120,10 +120,10 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
             
             return notificationCell
         case "NotificationRadiusCell":
-            notificationRadiusCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as? NotificationRadiusCell
+            notificationRadiusCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? NotificationRadiusCell
             notificationRadiusCell?.radiusLabel.text = currentCell["text"] as? String
             var selectedRadius: Int? {
-                if let radius = categoryToEdit?.remindRadius where categoryToEdit != nil {
+                if let radius = categoryToEdit?.remindRadius, categoryToEdit != nil {
                     switch radius {
                     case 50:
                         return 0
@@ -139,7 +139,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
             
             return notificationRadiusCell ?? UITableViewCell()
         case "NotificationMethodCell":
-            notificationMethodCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as? NotificationMethodCell
+            notificationMethodCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? NotificationMethodCell
             notificationMethodCell?.textLabel?.text = currentCell["text"] as? String
             notificationMethodCell?.methodSegment.selectedSegmentIndex = categoryToEdit?.remindMethod as? Int ?? 0
             
@@ -149,10 +149,10 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         }
     }
     
-    func toggleNotification(sender: UISwitch)
+    func toggleNotification(_ sender: UISwitch)
     {
         // If local notification is enabled, user can have further options, otherwise display an alert to tell user notification is disabled.
-        if UIApplication.sharedApplication().currentUserNotificationSettings()?.types.rawValue != 0
+        if UIApplication.shared.currentUserNotificationSettings?.types.rawValue != 0
         {
             tableView.beginUpdates()
             
@@ -161,43 +161,43 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
             let row = 0
             
             // Set two more cells to visible in cell descriptors.
-            cellDescriptors[section][row].setValue(notificationCell?.remindMeSwitch.on, forKey: "isExpanded")
-            cellDescriptors[section][row + 1].setValue(notificationCell?.remindMeSwitch.on, forKey: "isVisible")
-            cellDescriptors[section][row + 2].setValue(notificationCell?.remindMeSwitch.on, forKey: "isVisible")
+            cellDescriptors[section][row].setValue(notificationCell?.remindMeSwitch.isOn, forKey: "isExpanded")
+            cellDescriptors[section][row + 1].setValue(notificationCell?.remindMeSwitch.isOn, forKey: "isVisible")
+            cellDescriptors[section][row + 2].setValue(notificationCell?.remindMeSwitch.isOn, forKey: "isVisible")
             
             // Get visible cells then reload this section
             getIndexOfVisibleCells()
             
             // If switch is on, then add two rows, otherwise delete two rows.
-            if sender.on
+            if sender.isOn
             {
-                tableView.insertRowsAtIndexPaths([NSIndexPath(forRow: row + 1, inSection: section), NSIndexPath(forRow: row + 2, inSection: section)], withRowAnimation: .Top)
+                tableView.insertRows(at: [IndexPath(row: row + 1, section: section), IndexPath(row: row + 2, section: section)], with: .top)
             }
             else
             {
-                tableView.deleteRowsAtIndexPaths([NSIndexPath(forRow: row + 1, inSection: section), NSIndexPath(forRow: row + 2, inSection: section)], withRowAnimation: .Top)
+                tableView.deleteRows(at: [IndexPath(row: row + 1, section: section), IndexPath(row: row + 2, section: section)], with: .top)
             }
-            notificationCell?.previousValue = sender.on
+            notificationCell?.previousValue = sender.isOn
             adjustContentSize()
             
             tableView.endUpdates()
         }
         else
         {
-            let alert = UIAlertController(title: "Notification Services Off", message: "Turn on Notification in Settings > Notification to allow i-Reminder to send you nofitication at a place", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: {
+            let alert = UIAlertController(title: "Notification Services Off", message: "Turn on Notification in Settings > Notification to allow i-Reminder to send you nofitication at a place", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {
                 (alert: UIAlertAction) in sender.setOn(false, animated: true)
             }))
-            presentViewController(alert, animated: true, completion: nil)
+            present(alert, animated: true, completion: nil)
         }
         
     }
     
-    override func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 999
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         // Return different height for cell at different index
         if indexPath.section == 0 && indexPath.row == 2
         {
@@ -217,7 +217,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
     func loadCellDescriptors()
     {
         // Load cell descriptors from plist.
-        if let path = NSBundle.mainBundle().pathForResource("CellDescriptor", ofType: "plist")
+        if let path = Bundle.main.path(forResource: "CellDescriptor", ofType: "plist")
         {
             cellDescriptors = NSMutableArray(contentsOfFile: path)
             getIndexOfVisibleCells()
@@ -246,64 +246,64 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         }
     }
     
-    func getCellDescriptorForIndexPath(indexPath: NSIndexPath) -> [String: AnyObject] {
+    func getCellDescriptorForIndexPath(_ indexPath: IndexPath) -> [String: AnyObject] {
         // Get cell descriptor for a particular index path.
         let indexOfVisibleRow = visibleCellsPerSection[indexPath.section][indexPath.row]
         let cellDescriptor = (cellDescriptors[indexPath.section] as! NSArray)[indexOfVisibleRow] as! [String: AnyObject]
         return cellDescriptor
     }
     
-    func textDidChange(textField: UITextField) {
+    func textDidChange(_ textField: UITextField) {
         // If either title or location is empty, display "Done" button.
-        doneButton.enabled = textField.text?.characters.count != 0 && annotation != nil
+        doneButton.isEnabled = textField.text?.characters.count != 0 && annotation != nil
     }
     
-    func setPickerTextColor(color: UIColor)
+    func setPickerTextColor(_ color: UIColor)
     {
         categoryColorCell?.textLabel?.textColor = color
     }
     
-    @IBAction func click(sender: UIButton) {
+    @IBAction func click(_ sender: UIButton) {
         // Popover a color picker to let user select a color for this category.
-        let popoverVC = storyboard?.instantiateViewControllerWithIdentifier("colorPickerPopover") as! ColorPickerViewController
-        popoverVC.modalPresentationStyle = .Popover
-        popoverVC.preferredContentSize = CGSizeMake(284, 446)
+        let popoverVC = storyboard?.instantiateViewController(withIdentifier: "colorPickerPopover") as! ColorPickerViewController
+        popoverVC.modalPresentationStyle = .popover
+        popoverVC.preferredContentSize = CGSize(width: 284, height: 446)
         if let popoverController = popoverVC.popoverPresentationController {
             popoverController.sourceView = sender
             popoverController.sourceRect = CGRect(x: 0, y: 0, width: 85, height: 30)
-            popoverController.permittedArrowDirections = .Any
+            popoverController.permittedArrowDirections = .any
             popoverController.delegate = self
             popoverVC.delegate = self
         }
-        presentViewController(popoverVC, animated: true, completion: nil)
+        present(popoverVC, animated: true, completion: nil)
     }
     
-    func adaptivePresentationStyleForPresentationController(controller: UIPresentationController) -> UIModalPresentationStyle {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         // Force iPhone to display popover rather than push a new view.
-        return .None
+        return .none
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "chooseLocationSegue"
         {
             // Configure destination view controller.
-            let vc = segue.destinationViewController as! LocationViewController
+            let vc = segue.destination as! LocationViewController
             vc.delegate = self
             navigationController?.preferredContentSize = largeSize
         }
     }
     
     // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
         return false
     }
     
-    @IBAction func cancelAddCategory(sender: UIBarButtonItem) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancelAddCategory(_ sender: UIBarButtonItem) {
+        self.dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func doneAddCategory(sender: UIBarButtonItem) {
+    @IBAction func doneAddCategory(_ sender: UIBarButtonItem) {
         
         // When done button is clicked, get all information from cells.
         let title = categoryTitleCell.inputTitleTextField.text!
@@ -311,11 +311,11 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         let annotationTitle: String = annotation!.title!
         let latitude: Double = annotation!.coordinate.latitude
         let longitude: Double = annotation!.coordinate.longitude
-        let remindMe = notificationCell.remindMeSwitch.on
+        let remindMe = notificationCell.remindMeSwitch.isOn
         var remindRadius: Int? {
-            if notificationCell.remindMeSwitch.on
+            if notificationCell.remindMeSwitch.isOn
             {
-                switch notificationRadiusCell!.radiusPicker.selectedRowInComponent(0) {
+                switch notificationRadiusCell!.radiusPicker.selectedRow(inComponent: 0) {
                 case 0:
                     return 50
                 case 1:
@@ -329,7 +329,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
             return nil
         }
         var remindMethod: Int? {
-            if notificationCell.remindMeSwitch.on
+            if notificationCell.remindMeSwitch.isOn
             {
                 return notificationMethodCell?.methodSegment.selectedSegmentIndex
             }
@@ -340,16 +340,16 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         if categoryToEdit == nil
         {
             // Add new item into core data as well as temporary list
-            let category = NSEntityDescription.insertNewObjectForEntityForName("Category", inManagedObjectContext: managedObject) as! Category
+            let category = NSEntityDescription.insertNewObject(forEntityName: "Category", into: managedObject) as! Category
             category.title = title
-            category.color = NSKeyedArchiver.archivedDataWithRootObject(color)
+            category.color = NSKeyedArchiver.archivedData(withRootObject: color)
             category.annotationTitle = annotationTitle
-            category.latitude = latitude
-            category.longitude = longitude
-            category.remindMe = remindMe
-            category.remindRadius = remindRadius
-            category.remindMethod = remindMethod
-            category.index = tmpCategoryList.count
+            category.latitude = NSNumber(latitude)
+            category.longitude = NSNumber(longitude)
+            category.remindMe = remindMe as NSNumber
+            category.remindRadius = remindRadius as! NSNumber
+            category.remindMethod = remindMethod as! NSNumber
+            category.index = NSNumber(tmpCategoryList.count)
             category.completed = false
             tmpCategoryList.append(category)
         }
@@ -357,17 +357,17 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         {
             // Otherwise modify the category selected by a user.
             categoryToEdit?.title = title
-            categoryToEdit?.color = NSKeyedArchiver.archivedDataWithRootObject(color)
+            categoryToEdit?.color = NSKeyedArchiver.archivedData(withRootObject: color)
             categoryToEdit?.annotationTitle = annotationTitle
-            categoryToEdit?.latitude = latitude
-            categoryToEdit?.longitude = longitude
-            categoryToEdit?.remindMe = remindMe
-            categoryToEdit?.remindRadius = remindRadius
-            categoryToEdit?.remindMethod = remindMethod
+            categoryToEdit?.latitude = NSNumber(latitude)
+            categoryToEdit?.longitude = NSNumber(longitude)
+            categoryToEdit?.remindMe = remindMe as NSNumber
+            categoryToEdit?.remindRadius = remindRadius as! NSNumber
+            categoryToEdit?.remindMethod = remindMethod as! NSNumber
         }
         
         saveData()
-        dismissViewControllerAnimated(true, completion: {
+        dismiss(animated: true, completion: {
             self.delegate?.tableView.reloadData()
             if self.mapDelegate?.mapView != nil
             {
@@ -377,7 +377,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         appDelegate.refreshGeofencing()
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
             return "required"
@@ -386,13 +386,13 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         }
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 20
     }
     
     func adjustContentSize()
     {
-        navigationController?.preferredContentSize = notificationCell.remindMeSwitch.on ? largeSize : smallSize
+        navigationController?.preferredContentSize = notificationCell.remindMeSwitch.isOn ? largeSize : smallSize
     }
 
     /*

@@ -15,7 +15,7 @@ import CoreData
 extension Category {
 
     @NSManaged var title: String
-    @NSManaged var color: NSData
+    @NSManaged var color: Data
     @NSManaged var annotationTitle: String
     @NSManaged var latitude: NSNumber
     @NSManaged var longitude: NSNumber
@@ -26,18 +26,18 @@ extension Category {
     @NSManaged var index: NSNumber
     @NSManaged var reminderList: NSSet
     
-    func addReminder(reminder: Reminder)
+    func addReminder(_ reminder: Reminder)
     {
-        let list = mutableSetValueForKey("reminderList")
-        list.addObject(reminder)
+        let list = mutableSetValue(forKey: "reminderList")
+        list.add(reminder)
     }
     
-    func removeReminder(reminder: Reminder?)
+    func removeReminder(_ reminder: Reminder?)
     {
-        let list = mutableSetValueForKey("reminderList")
-        if reminder != nil && list.containsObject(reminder!)
+        let list = mutableSetValue(forKey: "reminderList")
+        if reminder != nil && list.contains(reminder!)
         {
-            list.removeObject(reminder!)
+            list.remove(reminder!)
         }
     }
 

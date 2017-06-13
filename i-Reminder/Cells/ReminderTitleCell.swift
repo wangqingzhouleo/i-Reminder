@@ -17,10 +17,10 @@ class ReminderTitleCell: UITableViewCell, UITextFieldDelegate {
         super.awakeFromNib()
         // Initialization code
         inputTitleTextField.delegate = self
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.textDidChange), name: nil, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.textDidChange), name: nil, object: nil)
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -31,7 +31,7 @@ class ReminderTitleCell: UITableViewCell, UITextFieldDelegate {
         delegate?.textDidChange(inputTitleTextField)
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.endEditing(true)
         return false
     }

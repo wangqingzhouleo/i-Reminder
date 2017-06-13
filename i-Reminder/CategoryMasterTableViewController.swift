@@ -24,15 +24,15 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
         
     }
     
-    override func viewDidAppear(animated: Bool) {
-        tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Automatic)
+    override func viewDidAppear(_ animated: Bool) {
+        tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
     }
     
-    override func viewDidDisappear(animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if let index = tableView.indexPathForSelectedRow
         {
-            tableView.deselectRowAtIndexPath(index, animated: true)
+            tableView.deselectRow(at: index, animated: true)
         }
     }
     
@@ -43,18 +43,18 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return tmpCategoryList.count
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("CategoryMasterCell", forIndexPath: indexPath) as! CategoryMasterCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryMasterCell", for: indexPath) as! CategoryMasterCell
 
         // Configure the cell...
         let category = tmpCategoryList[indexPath.row]
@@ -78,37 +78,37 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
         cell.indexPath = indexPath
         cell.delegate = self
         
-        cell.tagButton.setTitle(nil, forState: .Selected)
+        cell.tagButton.setTitle(nil, for: .selected)
         // Configure the button based on user's selection, including color and state.
-        cell.tagButton.circleColor = NSKeyedUnarchiver.unarchiveObjectWithData(category.color) as! UIColor
-        cell.tagButton.selected = category.completed.boolValue
-        cell.categoryLabel.textColor = category.completed.boolValue ? UIColor.lightGrayColor() : UIColor.blackColor()
+        cell.tagButton.circleColor = NSKeyedUnarchiver.unarchiveObject(with: category.color as Data) as! UIColor
+        cell.tagButton.isSelected = category.completed.boolValue
+        cell.categoryLabel.textColor = category.completed.boolValue ? UIColor.lightGray : UIColor.black
 
         return cell
     }
     
                    
-    func tapButton(indexPath: NSIndexPath)
+    func tapButton(_ indexPath: IndexPath)
     {
         // First step get which button is clicked.
-        let cell = tableView.cellForRowAtIndexPath(indexPath) as! CategoryMasterCell
+        let cell = tableView.cellForRow(at: indexPath) as! CategoryMasterCell
         // Then set button selected state to opposite state.
-        cell.tagButton.selected = !cell.tagButton.selected
+        cell.tagButton.isSelected = !cell.tagButton.isSelected
         
         // Adjust text color based on button selection state.
-        switch cell.tagButton.selected {
+        switch cell.tagButton.isSelected {
         case true:
-            cell.categoryLabel.textColor = UIColor.lightGrayColor()
+            cell.categoryLabel.textColor = UIColor.lightGray
         case false:
-            cell.categoryLabel.textColor = UIColor.blackColor()
+            cell.categoryLabel.textColor = UIColor.black
         }
         // Save changes to array and core data.
-        tmpCategoryList[indexPath.row].completed = cell.tagButton.selected
+        tmpCategoryList[indexPath.row].completed = cell.tagButton.isSelected as NSNumber
         saveData()
         appDelegate.refreshGeofencing()
     }
     
-    override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         
         // The table should not perform segue if no row is selected, if don't set this method, iPad version will has error when launch app.
         if identifier == "showCategoryDetailSegue" && tableView.indexPathForSelectedRow != nil
@@ -118,14 +118,14 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
         return false
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showCategoryDetailSegue"
         {
             // Configure destination controller.
-            let navigationVC = segue.destinationViewController as! UINavigationController
+            let navigationVC = segue.destination as! UINavigationController
             let vc = navigationVC.topViewController! as! CategoryDetailTableViewController
             let selectedIndex = tableView.indexPathForSelectedRow!
-            vc.masterButtonColor = (tableView.cellForRowAtIndexPath(selectedIndex) as! CategoryMasterCell).tagButton.circleColor
+            vc.masterButtonColor = (tableView.cellForRow(at: selectedIndex) as! CategoryMasterCell).tagButton.circleColor
             vc.selectedCategoryIndexPath = selectedIndex
             vc.currentList = loadCurrentReminderList(inCategory: tmpCategoryList[selectedIndex.row])
             vc.delegate = self
@@ -133,72 +133,72 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
     }
 
     // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
         return true
     }
     
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return true
     }
 
-    override func tableView(tableView: UITableView, moveRowAtIndexPath sourceIndexPath: NSIndexPath, toIndexPath destinationIndexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         if sourceIndexPath != destinationIndexPath
         {
             // Move the item in the category list first.
-            tmpCategoryList.insert(tmpCategoryList.removeAtIndex(sourceIndexPath.row), atIndex: destinationIndexPath.row)
+            tmpCategoryList.insert(tmpCategoryList.remove(at: sourceIndexPath.row), at: destinationIndexPath.row)
             // Then reset all category's order in core data.
             resetCategoryListOrder()
             
             // This method has to be here, otherwise buttons will not reordered correctly.
-            tableView.moveRowAtIndexPath(sourceIndexPath, toIndexPath: destinationIndexPath)
+            tableView.moveRow(at: sourceIndexPath, to: destinationIndexPath)
             
             for item in tmpCategoryList
             {
                 // Reset all button's index to correct position.
-                let cell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: item.index as Int, inSection: 0)) as! CategoryMasterCell
-                cell.indexPath = NSIndexPath(forRow: item.index as Int, inSection: 0)
+                let cell = tableView.cellForRow(at: IndexPath(row: item.index as Int, section: 0)) as! CategoryMasterCell
+                cell.indexPath = IndexPath(row: item.index as Int, section: 0)
             }
             
             saveData()
         }
     }
     
-    override func tableView(tableView: UITableView, editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
-        let delete = UITableViewRowAction(style: .Default, title: "Delete", handler: { _,_ in
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .default, title: "Delete", handler: { _,_ in
             // Display an alert to confirm deletion
             let category = tmpCategoryList[indexPath.row]
-            let alert = UIAlertController(title: "Delete \"\(category.title)\"?", message: "This will permanently delete all reminders in \"\(category.title)\".", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-            alert.addAction(UIAlertAction(title: "Delete", style: .Destructive, handler: { (UIAlertAction) in
+            let alert = UIAlertController(title: "Delete \"\(category.title)\"?", message: "This will permanently delete all reminders in \"\(category.title)\".", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (UIAlertAction) in
                 // Remove from core data first, then remove from global array
-                managedObject.deleteObject(tmpCategoryList[indexPath.row])
-                tmpCategoryList.removeAtIndex(indexPath.row)
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                managedObject.delete(tmpCategoryList[indexPath.row])
+                tmpCategoryList.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
                 saveData()
                 resetCategoryListOrder()
                 appDelegate.refreshGeofencing()
             }))
-            self.presentViewController(alert, animated: true, completion: nil)
+            self.present(alert, animated: true, completion: nil)
         })
-        let more = UITableViewRowAction(style: .Normal, title: "More", handler: { _,_ in
+        let more = UITableViewRowAction(style: .normal, title: "More", handler: { _,_ in
             self.editCategory(indexPath)
         })
         
         return [delete, more]
     }
     
-    func editCategory(indexPath: NSIndexPath) {
+    func editCategory(_ indexPath: IndexPath) {
         // Present the same popover as add category, then pass selected row to the controller for edit purpose.
-        let popoverVC = storyboard?.instantiateViewControllerWithIdentifier("addCategoryPopover") as! UINavigationController
-        popoverVC.modalPresentationStyle = .Popover
+        let popoverVC = storyboard?.instantiateViewController(withIdentifier: "addCategoryPopover") as! UINavigationController
+        popoverVC.modalPresentationStyle = .popover
         if let popoverController = popoverVC.popoverPresentationController {
-            popoverController.sourceView = self.tableView.cellForRowAtIndexPath(indexPath)
+            popoverController.sourceView = self.tableView.cellForRow(at: indexPath)
             popoverController.sourceRect = CGRect(x: 100, y: 0, width: 85, height: 30)
-            popoverController.permittedArrowDirections = .Any
+            popoverController.permittedArrowDirections = .any
             popoverController.delegate = self
         }
-        presentViewController(popoverVC, animated: true, completion: nil)
+        present(popoverVC, animated: true, completion: nil)
         let vc = popoverVC.topViewController as! AddCategoryTableViewController
         vc.delegate = self
         let category = tmpCategoryList[indexPath.row]
@@ -211,16 +211,16 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
         vc.annotation = annotation
     }
     
-    func adaptivePresentationStyleForPresentationController(controller: UIPresentationController) -> UIModalPresentationStyle {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         // Force iPhone to display popover rather than push a new view.
-        return .None
+        return .none
     }
     
-    override func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 999
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         // If user want notification for a category, then return 60 as row height to display the address.
         let category = tmpCategoryList[indexPath.row]
         if category.remindMe.boolValue

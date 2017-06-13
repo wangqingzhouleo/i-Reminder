@@ -22,10 +22,10 @@ class AddReminderTableViewController: UITableViewController {
     
     var delegate: CategoryDetailTableViewController?
     var reminderToEdit: Reminder?
-    var indexPathToEdit: NSIndexPath?
-    let formatter = NSDateFormatter()
-    var largeSize = CGSizeMake(320, 460)
-    var smallSize = CGSizeMake(320, 250)
+    var indexPathToEdit: IndexPath?
+    let formatter = DateFormatter()
+    var largeSize = CGSize(width: 320, height: 460)
+    var smallSize = CGSize(width: 320, height: 250)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,24 +46,24 @@ class AddReminderTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         adjustContentSize()
     }
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return cellDescriptors.count
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return visibleCellsPerSection[section].count
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let currentCell = getCellDescriptorForIndexPath(indexPath)
         let cellId = currentCell["cellIdentifier"] as! String
         
@@ -71,22 +71,22 @@ class AddReminderTableViewController: UITableViewController {
         // If this view is called from reminder list table rather than add new reminder, then reminderToEdit must not be nil, so load data for a particular reminder.
         switch cellId {
         case "ReminderTitleCell":
-            reminderTitleCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as! ReminderTitleCell
+            reminderTitleCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! ReminderTitleCell
             reminderTitleCell.delegate = self
             reminderTitleCell.inputTitleTextField.text = reminderToEdit?.title ?? nil
             
             return reminderTitleCell
         case "ReminderNoteCell":
-            reminderNoteCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as! ReminderNoteCell
+            reminderNoteCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! ReminderNoteCell
             reminderNoteCell.inputNoteTextField.text = reminderToEdit?.note ?? nil
             
             return reminderNoteCell ?? UITableViewCell()
         case "ReminderDueDateCell":
-            reminderDueDateCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as! ReminderDueDateCell
+            reminderDueDateCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! ReminderDueDateCell
             reminderDueDateCell.dueDateLabel.text = currentCell["text"] as? String
             reminderDueDateCell.delegate = self
             reminderDueDateCell.dueDateSwitch.setOn(reminderToEdit?.hasDueDate.boolValue ?? false, animated: true)
-            if let hasDueDate = reminderToEdit?.hasDueDate.boolValue where reminderToEdit != nil
+            if let hasDueDate = reminderToEdit?.hasDueDate.boolValue, reminderToEdit != nil
             {
                 if hasDueDate
                 {
@@ -96,15 +96,15 @@ class AddReminderTableViewController: UITableViewController {
             
             return reminderDueDateCell ?? UITableViewCell()
         case "DatePickerCell":
-            datePickerCell = tableView.dequeueReusableCellWithIdentifier(cellId, forIndexPath: indexPath) as? DatePickerCell
+            datePickerCell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? DatePickerCell
             datePickerCell?.delegate = self
             if reminderToEdit?.dueDate != nil
             {
-                datePickerCell?.datePicker.setDate(reminderToEdit!.dueDate!, animated: false)
+                datePickerCell?.datePicker.setDate(reminderToEdit!.dueDate! as Date, animated: false)
             }
             else
             {
-                datePickerCell?.datePicker.setDate(NSDate().dateByAddingTimeInterval(1800), animated: false)
+                datePickerCell?.datePicker.setDate(Date().addingTimeInterval(1800), animated: false)
             }
             
             return datePickerCell ?? UITableViewCell()
@@ -116,7 +116,7 @@ class AddReminderTableViewController: UITableViewController {
     func loadCellDescriptors()
     {
         // Load cell descriptors from plist.
-        if let path = NSBundle.mainBundle().pathForResource("AddReminderCellDescriptor", ofType: "plist")
+        if let path = Bundle.main.path(forResource: "AddReminderCellDescriptor", ofType: "plist")
         {
             cellDescriptors = NSMutableArray(contentsOfFile: path)
             getIndexOfVisibleCells()
@@ -145,21 +145,21 @@ class AddReminderTableViewController: UITableViewController {
         }
     }
     
-    func getCellDescriptorForIndexPath(indexPath: NSIndexPath) -> [String: AnyObject] {
+    func getCellDescriptorForIndexPath(_ indexPath: IndexPath) -> [String: AnyObject] {
         // Get cell descriptor for a particular index path.
         let indexOfVisibleRow = visibleCellsPerSection[indexPath.section][indexPath.row]
         let cellDescriptor = (cellDescriptors[indexPath.section] as! NSArray)[indexOfVisibleRow] as! [String: AnyObject]
         return cellDescriptor
     }
     
-    func textDidChange(textField: UITextField)
+    func textDidChange(_ textField: UITextField)
     {
         // Since title is mandatory, if text is empty then disable the button.
         // If selected index from category master table is nil, disable add button. This conidtion is used for iPad app.
-        doneButton.enabled = textField.text?.characters.count != 0 && delegate?.selectedCategoryIndexPath != nil
+        doneButton.isEnabled = textField.text?.characters.count != 0 && delegate?.selectedCategoryIndexPath != nil
     }
     
-    func toggleDueDateStatus(sender: UISwitch)
+    func toggleDueDateStatus(_ sender: UISwitch)
     {
         tableView.beginUpdates()
         
@@ -167,39 +167,39 @@ class AddReminderTableViewController: UITableViewController {
         let section = 1
         let row = 1
         
-        cellDescriptors[section][row].setValue(sender.on, forKey: "isExpanded")
-        cellDescriptors[section][row + 1].setValue(sender.on, forKey: "isVisible")
+        cellDescriptors[section][row].setValue(sender.isOn, forKey: "isExpanded")
+        cellDescriptors[section][row + 1].setValue(sender.isOn, forKey: "isVisible")
         
         // Get visible cells then reload this section
         getIndexOfVisibleCells()
         
         // If switch is on, then add two rows, otherwise delete two rows.
-        if sender.on
+        if sender.isOn
         {
-            tableView.insertRowsAtIndexPaths([NSIndexPath(forRow: row + 1, inSection: section)], withRowAnimation: .Top)
+            tableView.insertRows(at: [IndexPath(row: row + 1, section: section)], with: .top)
         }
         else
         {
-            tableView.deleteRowsAtIndexPaths([NSIndexPath(forRow: row + 1, inSection: section)], withRowAnimation: .Top)
+            tableView.deleteRows(at: [IndexPath(row: row + 1, section: section)], with: .top)
         }
-        reminderDueDateCell.previousValue = sender.on
+        reminderDueDateCell.previousValue = sender.isOn
         adjustContentSize()
         
         tableView.endUpdates()
-        reminderDueDateCell?.dueDateLabel.text = sender.on ? formatter.stringFromDate(datePickerCell!.datePicker.date) : "Due date"
+        reminderDueDateCell?.dueDateLabel.text = sender.isOn ? formatter.string(from: datePickerCell!.datePicker.date) : "Due date"
     }
     
-    func datePickerValueChanged(datePicker: UIDatePicker)
+    func datePickerValueChanged(_ datePicker: UIDatePicker)
     {
         // Change due date cell's text based on date picker's value.
-        reminderDueDateCell?.dueDateLabel.text = formatter.stringFromDate(datePickerCell!.datePicker.date)
+        reminderDueDateCell?.dueDateLabel.text = formatter.string(from: datePickerCell!.datePicker.date)
     }
     
-    override func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 999
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.section == 1 && indexPath.row == 2
         {
             return UITableViewAutomaticDimension
@@ -210,25 +210,25 @@ class AddReminderTableViewController: UITableViewController {
         }
     }
 
-    @IBAction func cancelAddReminder(sender: AnyObject) {
-        dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancelAddReminder(_ sender: AnyObject) {
+        dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func doneAddReminder(sender: AnyObject) {
+    @IBAction func doneAddReminder(_ sender: AnyObject) {
         // When done button is clicked, retrieve data form all cells first.
         let title = reminderTitleCell.inputTitleTextField.text!
         let note = reminderNoteCell?.inputNoteTextField.text
-        let hasDueDate = reminderDueDateCell.dueDateSwitch.on
+        let hasDueDate = reminderDueDateCell.dueDateSwitch.isOn
         let dueDate = datePickerCell?.datePicker.date
         
         if reminderToEdit == nil
         {
             // If reminderToEdit is nil, this means user is adding a new reminder. So add this into core data.
-            let reminder = NSEntityDescription.insertNewObjectForEntityForName("Reminder", inManagedObjectContext: managedObject) as! Reminder
+            let reminder = NSEntityDescription.insertNewObject(forEntityName: "Reminder", into: managedObject) as! Reminder
             reminder.title = title
             reminder.note = note?.characters.count == 0 ? nil : note
-            reminder.hasDueDate = hasDueDate
-            reminder.dueDate = dueDate
+            reminder.hasDueDate = hasDueDate as NSNumber
+            reminder.dueDate = dueDate as! NSDate
             reminder.completed = false
             
             let category = tmpCategoryList[delegate!.selectedCategoryIndexPath!.row]
@@ -241,19 +241,19 @@ class AddReminderTableViewController: UITableViewController {
             // Otherwise make changes to the selected reminder.
             reminderToEdit?.title = title
             reminderToEdit?.note = note?.characters.count == 0 ? nil : note
-            reminderToEdit?.hasDueDate = hasDueDate
+            reminderToEdit?.hasDueDate = hasDueDate as NSNumber
             reminderToEdit?.dueDate = hasDueDate ? dueDate : nil
             
         }
         
         // Save data to core data.
         saveData()
-        dismissViewControllerAnimated(true, completion: {
+        dismiss(animated: true, completion: {
             self.delegate?.tableView.reloadData()
         })
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
             return "required"
@@ -262,13 +262,13 @@ class AddReminderTableViewController: UITableViewController {
         }
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 20
     }
     
     func adjustContentSize()
     {
-        navigationController?.preferredContentSize = reminderDueDateCell.dueDateSwitch.on ? largeSize : smallSize
+        navigationController?.preferredContentSize = reminderDueDateCell.dueDateSwitch.isOn ? largeSize : smallSize
     }
     
     /*

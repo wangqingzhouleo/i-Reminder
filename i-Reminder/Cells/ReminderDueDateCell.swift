@@ -21,21 +21,21 @@ class ReminderDueDateCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
 
-    @IBAction func toggleDueDateStatus(sender: UISwitch) {
-        if sender.on == previousValue
+    @IBAction func toggleDueDateStatus(_ sender: UISwitch) {
+        if sender.isOn == previousValue
         {
             return
         }
         else
         {
             delegate?.toggleDueDateStatus(sender)
-            previousValue = sender.on
+            previousValue = sender.isOn
         }
     }
 }

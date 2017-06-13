@@ -13,7 +13,7 @@ class CustomPin: MKPointAnnotation {
     
     var pinColor: UIColor!
     var reminderList: [Reminder]!
-    var selectedIndex: NSIndexPath!
+    var selectedIndex: IndexPath!
     var category: Category!
     
 }

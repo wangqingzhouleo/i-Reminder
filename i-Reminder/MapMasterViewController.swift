@@ -9,6 +9,30 @@
 import UIKit
 import MapKit
 import CoreLocation
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIGestureRecognizerDelegate {
 
@@ -39,10 +63,10 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         setFirstToolbarButton()
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // Set map shows user location based on location service setting.
-        mapView.showsUserLocation = CLLocationManager.authorizationStatus() == .AuthorizedAlways || CLLocationManager.authorizationStatus() == .AuthorizedWhenInUse
+        mapView.showsUserLocation = CLLocationManager.authorizationStatus() == .authorizedAlways || CLLocationManager.authorizationStatus() == .authorizedWhenInUse
         loadData()
     }
 
@@ -51,9 +75,9 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         // Dispose of any resources that can be recreated.
     }
     
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         switch status {
-        case .AuthorizedAlways, .AuthorizedWhenInUse:
+        case .authorizedAlways, .authorizedWhenInUse:
             mapView.showsUserLocation = true
             if CLLocationManager.locationServicesEnabled()
             {
@@ -74,12 +98,12 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         {
             // For each category in the list, convert it to a custom pin then added it on the map.
             let annotation = CustomPin()
-            annotation.pinColor = NSKeyedUnarchiver.unarchiveObjectWithData(category.color) as! UIColor
+            annotation.pinColor = NSKeyedUnarchiver.unarchiveObject(with: category.color as Data) as! UIColor
             annotation.coordinate = CLLocationCoordinate2D(latitude: category.latitude as Double, longitude: category.longitude as Double)
             annotation.title = category.title
             annotation.subtitle = category.annotationTitle
             annotation.reminderList = category.reminderList.allObjects as! [Reminder]
-            annotation.selectedIndex = NSIndexPath(forRow: category.index as Int, inSection: 0)
+            annotation.selectedIndex = IndexPath(row: category.index as Int, section: 0)
             annotation.category = category
             mapView.addAnnotation(annotation)
             
@@ -99,7 +123,7 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         }
     }
     
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if annotation.isEqual(mapView.userLocation)
         {
             // If annotatio is user location, use default annotation.
@@ -111,18 +135,18 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
             
             // Set pin color to category color.
             view.pinTintColor = (annotation as! CustomPin).pinColor
-            view.enabled = true
+            view.isEnabled = true
             view.canShowCallout = true
             view.animatesDrop = true
             
             // Right button is detail disclosure, tells user this call out can show more information on click.
-            let rightButton = UIButton(type: .DetailDisclosure)
+            let rightButton = UIButton(type: .detailDisclosure)
             rightButton.tintColor = UIColor(red: 0.0392, green: 0.8078, blue: 0.1647, alpha: 1)
             let leftButton = UIButton(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-            leftButton.setTitle(nil, forState: .Selected)
+            leftButton.setTitle(nil, for: .selected)
             
             // Set left button's image on call out accessory to a car image, user can have more options by clicking this button.
-            leftButton.setImage(UIImage(named: "get direction"), forState: .Normal)
+            leftButton.setImage(UIImage(named: "get direction"), for: UIControlState())
             leftButton.imageView?.tintColor = UIColor(red: 0.0392, green: 0.8078, blue: 0.1647, alpha: 1)
             
             view.rightCalloutAccessoryView = rightButton
@@ -132,18 +156,18 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         }
     }
     
-    func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         // When any pin is tapped, show an alert which contains some information about that branch with further options: Get direction or Call
         if control == view.rightCalloutAccessoryView
         {
             if let pin = view.annotation as? CustomPin
             {
-                if let navigationVC = storyboard?.instantiateViewControllerWithIdentifier("categoryDetailNavigation") as? UINavigationController
+                if let navigationVC = storyboard?.instantiateViewController(withIdentifier: "categoryDetailNavigation") as? UINavigationController
                 {
                     let detailVC = navigationVC.topViewController as! CategoryDetailTableViewController
                     let category = pin.category
-                    detailVC.currentList = loadCurrentReminderList(inCategory: category)
-                    detailVC.masterButtonColor = NSKeyedUnarchiver.unarchiveObjectWithData(category.color) as? UIColor
+                    detailVC.currentList = loadCurrentReminderList(inCategory: category!)
+                    detailVC.masterButtonColor = NSKeyedUnarchiver.unarchiveObject(with: category?.color as! Data) as? UIColor
                     detailVC.selectedCategoryIndexPath = pin.selectedIndex
                     navigationController?.showDetailViewController(navigationVC, sender: self)
                 }
@@ -154,24 +178,24 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
             // User has 3 options for direction: Display direction on current map, open direction in Google Maps (if use installed Google Maps on the phone) or open direction in Apple Maps.
             if let pin = view.annotation as? CustomPin
             {
-                let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
+                let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
                 
-                alert.addAction(UIAlertAction(title: "Show Route", style: .Default, handler: {
+                alert.addAction(UIAlertAction(title: "Show Route", style: .default, handler: {
                     (alert: UIAlertAction) in self.showRoute(pin)
                 }))
-                if UIApplication.sharedApplication().canOpenURL(NSURL(string: "comgooglemaps://")!)
+                if UIApplication.shared.canOpenURL(URL(string: "comgooglemaps://")!)
                 {
-                    alert.addAction(UIAlertAction(title: "Navigate by Google Maps", style: .Default, handler: {
+                    alert.addAction(UIAlertAction(title: "Navigate by Google Maps", style: .default, handler: {
                         (alert: UIAlertAction) in self.openGoogleMap(pin)
                     }))
                 }
-                alert.addAction(UIAlertAction(title: "Navigate by Apple Maps", style: .Default, handler: {
+                alert.addAction(UIAlertAction(title: "Navigate by Apple Maps", style: .default, handler: {
                     (alert: UIAlertAction) in self.openAppleMap(pin)
                 }))
                 
-                alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
                 
-                presentViewController(alert, animated: true, completion: nil)
+                present(alert, animated: true, completion: nil)
             }
         }
     }
@@ -182,22 +206,22 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         let button = MKUserTrackingBarButtonItem(mapView: mapView)
         button.target = self
         toolBar.items?.append(button)
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         self.toolBar.items?.append(flexibleSpace)
     }
     
-    func mapView(mapView: MKMapView, didChangeUserTrackingMode mode: MKUserTrackingMode, animated: Bool) {
-        if CLLocationManager.authorizationStatus() != .AuthorizedAlways && CLLocationManager.authorizationStatus() != .AuthorizedWhenInUse
+    func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+        if CLLocationManager.authorizationStatus() != .authorizedAlways && CLLocationManager.authorizationStatus() != .authorizedWhenInUse
         {
             // If location service is off, tell user the message and method to open it.
-            let alert = UIAlertController(title: "Location Services Off", message: "Turn on Location Services in Settings > Privacy to allow i-Reminder to determine your current location", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-            presentViewController(alert, animated: true, completion: nil)
+            let alert = UIAlertController(title: "Location Services Off", message: "Turn on Location Services in Settings > Privacy to allow i-Reminder to determine your current location", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
     }
     
-    func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
-        if overlay.isKindOfClass(MKPolyline)
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if overlay.isKind(of: MKPolyline.self)
         {
             // If the overlay is may route, set it to blue color
             let render = MKPolylineRenderer(polyline: overlay as! MKPolyline)
@@ -230,76 +254,76 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         }
     }
     
-    func showRoute(pin: CustomPin)
+    func showRoute(_ pin: CustomPin)
     {
-        if CLLocationManager.authorizationStatus() == .AuthorizedWhenInUse || CLLocationManager.authorizationStatus() == .AuthorizedAlways
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways
         {
             // Clear previous route first.
             clearRoute()
             // Then ask directions request for a particular direction for current location and destination place.
             let request = MKDirectionsRequest()
-            request.source = MKMapItem.mapItemForCurrentLocation()
+            request.source = MKMapItem.forCurrentLocation()
             request.destination = MKMapItem(placemark: MKPlacemark(coordinate: pin.coordinate, addressDictionary: nil))
             request.requestsAlternateRoutes = false
-            request.transportType = .Automobile
+            request.transportType = .automobile
             
             let directions = MKDirections(request: request)
             // Then ask MKDirections to calculate directions.
-            directions.calculateDirectionsWithCompletionHandler({ (response: MKDirectionsResponse?, error: NSError?) in
+            directions.calculate(completionHandler: { (response: MKDirectionsResponse?, error: NSError?) in
                 guard response != nil else {return}
                 
                 for route in response!.routes
                 {
-                    self.mapView.addOverlay(route.polyline, level: .AboveRoads)
+                    self.mapView.add(route.polyline, level: .aboveRoads)
                     self.mapView.setVisibleMapRect(route.polyline.boundingMapRect, edgePadding: UIEdgeInsetsMake(120, 100, 120, 100), animated: true)
                     self.routePolylines.append(route.polyline)
                 }
                 
                 // Add a cancen button at the right side of the toolbar. When the button is pressed, cancel the route.
-                let cancelButton = UIBarButtonItem(title: "Clear", style: .Plain, target: self, action: #selector(self.clearRoute))
+                let cancelButton = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(self.clearRoute))
                 self.toolBar.items?.append(cancelButton)
-            })
+            } as! MKDirectionsHandler)
         }
         else
         {
             // Display message to tell user location service is off, so cannot display directions on the map.
-            let alert = UIAlertController(title: "Location Services Off", message: "Turn on Location Services in Settings > Privacy to allow Working Rights to determine your current location", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-            presentViewController(alert, animated: true, completion: nil)
+            let alert = UIAlertController(title: "Location Services Off", message: "Turn on Location Services in Settings > Privacy to allow Working Rights to determine your current location", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
     }
     
-    func openGoogleMap(pin: CustomPin)
+    func openGoogleMap(_ pin: CustomPin)
     {
         // Open Google Maps to display route
-        let url = NSURL(string: "comgooglemaps://?daddr=\(pin.coordinate.latitude),\(pin.coordinate.longitude)&directionsmode=driving")!
-        UIApplication.sharedApplication().openURL(url)
+        let url = URL(string: "comgooglemaps://?daddr=\(pin.coordinate.latitude),\(pin.coordinate.longitude)&directionsmode=driving")!
+        UIApplication.shared.openURL(url)
     }
     
-    func openAppleMap(pin: CustomPin)
+    func openAppleMap(_ pin: CustomPin)
     {
         // Open Apple Maps to display route
         let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: pin.coordinate, addressDictionary: nil))
         mapItem.name = pin.subtitle
-        let launchOptions: NSDictionary = NSDictionary(object: MKLaunchOptionsDirectionsModeDriving, forKey: MKLaunchOptionsDirectionsModeKey)
+        let launchOptions: NSDictionary = NSDictionary(object: MKLaunchOptionsDirectionsModeDriving, forKey: MKLaunchOptionsDirectionsModeKey as NSCopying)
         
-        MKMapItem.openMapsWithItems([MKMapItem.mapItemForCurrentLocation(), mapItem], launchOptions: launchOptions as? [String : AnyObject])
+        MKMapItem.openMaps(with: [MKMapItem.forCurrentLocation(), mapItem], launchOptions: launchOptions as? [String : AnyObject])
     }
     
     
     // Add animation to the annotations
     // Source from http://yickhong-ios.blogspot.com.au/2012/04/animated-circle-on-mkmapview.html
-    func addAnimationToAnnotation(annotation: CustomPin, forCategory category: Category)
+    func addAnimationToAnnotation(_ annotation: CustomPin, forCategory category: Category)
     {
-        if let radius = category.remindRadius as? Double where category.remindRadius != nil
+        if let radius = category.remindRadius as? Double, category.remindRadius != nil
         {
             let region = MKCoordinateRegionMakeWithDistance(annotation.coordinate, radius, radius)
-            let rect = mapView.convertRegion(region, toRectToView: mapView)
+            let rect = mapView.convertRegion(region, toRectTo: mapView)
             
             let animatedOverlay = AnimatedOverlay(frame: rect)
             mapView.addSubview(animatedOverlay)
             
-            let color = NSKeyedUnarchiver.unarchiveObjectWithData(category.color) as! UIColor
+            let color = NSKeyedUnarchiver.unarchiveObject(with: category.color as Data) as! UIColor
             animatedOverlay.startAnimatingWithColor(color, andFrame: rect)
             animatedOverlayList.append(animatedOverlay)
         }
@@ -316,12 +340,12 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         }
     }
     
-    func mapView(mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
+    func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
         // Remove all overlays when map started drag
         removeAnimatedOverlay()
     }
     
-    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
         // Re-add animations when region stop change
         for item in mapView.annotations
         {

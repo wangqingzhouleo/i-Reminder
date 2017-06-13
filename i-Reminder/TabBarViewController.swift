@@ -7,6 +7,30 @@
 //
 
 import UIKit
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class TabBarViewController: UITabBarController, UIPopoverPresentationControllerDelegate {
     
@@ -35,8 +59,8 @@ class TabBarViewController: UITabBarController, UIPopoverPresentationControllerD
         // Dispose of any resources that can be recreated.
     }
     
-    override func tabBar(tabBar: UITabBar, didSelectItem item: UITabBarItem) {
-        if let barItems = tabBar.items where tabBar.items?.count > 0
+    override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        if let barItems = tabBar.items, tabBar.items?.count > 0
         {
             // Change navigation bar title according to which tab item is selected.
             switch item {
@@ -52,34 +76,34 @@ class TabBarViewController: UITabBarController, UIPopoverPresentationControllerD
         }
     }
     
-    @IBAction func toggleEditMode(sender: UIBarButtonItem) {
+    @IBAction func toggleEditMode(_ sender: UIBarButtonItem) {
         // Change "Edit" button's title and table's editing mode.
         let master = viewControllers![0] as! CategoryMasterTableViewController
-        master.setEditing(!master.tableView.editing, animated: true)
-        editButton.style = editButton.style == .Plain ? .Done : .Plain
+        master.setEditing(!master.tableView.isEditing, animated: true)
+        editButton.style = editButton.style == .plain ? .done : .plain
         editButton.title = editButton.title == "Edit" ? "Done" : "Edit"
-        editButtonItem()
+        editButtonItem
     }
 
-    @IBAction func addCategory(sender: UIBarButtonItem) {
+    @IBAction func addCategory(_ sender: UIBarButtonItem) {
         // Present a popover to let user add category.
-        let popoverVC = storyboard?.instantiateViewControllerWithIdentifier("addCategoryPopover") as! UINavigationController
-        popoverVC.modalPresentationStyle = .Popover
+        let popoverVC = storyboard?.instantiateViewController(withIdentifier: "addCategoryPopover") as! UINavigationController
+        popoverVC.modalPresentationStyle = .popover
         if let popoverController = popoverVC.popoverPresentationController {
             popoverController.barButtonItem = sender
             popoverController.sourceRect = CGRect(x: 0, y: 0, width: 85, height: 30)
-            popoverController.permittedArrowDirections = .Any
+            popoverController.permittedArrowDirections = .any
             popoverController.delegate = self
         }
-        presentViewController(popoverVC, animated: true, completion: nil)
+        present(popoverVC, animated: true, completion: nil)
         let vc = popoverVC.topViewController as! AddCategoryTableViewController
         vc.delegate = viewControllers![0] as? CategoryMasterTableViewController
         vc.mapDelegate = viewControllers![1] as? MapMasterViewController
     }
     
-    func adaptivePresentationStyleForPresentationController(controller: UIPresentationController) -> UIModalPresentationStyle {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         // Force iPhone to display popover rather than push a new view.
-        return .None
+        return .none
     }
     
     /*
