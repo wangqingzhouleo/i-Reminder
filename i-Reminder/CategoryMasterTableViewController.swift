@@ -156,8 +156,8 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
             for item in tmpCategoryList
             {
                 // Reset all button's index to correct position.
-                let cell = tableView.cellForRow(at: IndexPath(row: item.index as Int, section: 0)) as! CategoryMasterCell
-                cell.indexPath = IndexPath(row: item.index as Int, section: 0)
+                let cell = tableView.cellForRow(at: IndexPath(row: item.index as! Int, section: 0)) as! CategoryMasterCell
+                cell.indexPath = IndexPath(row: item.index as! Int, section: 0)
             }
             
             saveData()
@@ -206,7 +206,7 @@ class CategoryMasterTableViewController: UITableViewController, UIPopoverPresent
         vc.categoryToEdit = category
         vc.indexPathToEdit = indexPath
         let annotation = MKPointAnnotation()
-        annotation.coordinate = CLLocationCoordinate2D(latitude: category.latitude as Double, longitude: category.longitude as Double)
+        annotation.coordinate = CLLocationCoordinate2D(latitude: category.latitude as! Double, longitude: category.longitude as! Double)
         annotation.title = category.annotationTitle
         vc.annotation = annotation
     }

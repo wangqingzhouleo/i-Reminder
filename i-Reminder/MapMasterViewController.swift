@@ -99,11 +99,11 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
             // For each category in the list, convert it to a custom pin then added it on the map.
             let annotation = CustomPin()
             annotation.pinColor = NSKeyedUnarchiver.unarchiveObject(with: category.color as Data) as! UIColor
-            annotation.coordinate = CLLocationCoordinate2D(latitude: category.latitude as Double, longitude: category.longitude as Double)
+            annotation.coordinate = CLLocationCoordinate2D(latitude: category.latitude as! Double, longitude: category.longitude as! Double)
             annotation.title = category.title
             annotation.subtitle = category.annotationTitle
             annotation.reminderList = category.reminderList.allObjects as! [Reminder]
-            annotation.selectedIndex = IndexPath(row: category.index as Int, section: 0)
+            annotation.selectedIndex = IndexPath(row: category.index as! Int, section: 0)
             annotation.category = category
             mapView.addAnnotation(annotation)
             
@@ -167,7 +167,7 @@ class MapMasterViewController: UIViewController, MKMapViewDelegate, CLLocationMa
                     let detailVC = navigationVC.topViewController as! CategoryDetailTableViewController
                     let category = pin.category
                     detailVC.currentList = loadCurrentReminderList(inCategory: category!)
-                    detailVC.masterButtonColor = NSKeyedUnarchiver.unarchiveObject(with: category?.color as! Data) as? UIColor
+                    detailVC.masterButtonColor = NSKeyedUnarchiver.unarchiveObject(with: category!.color) as? UIColor
                     detailVC.selectedCategoryIndexPath = pin.selectedIndex
                     navigationController?.showDetailViewController(navigationVC, sender: self)
                 }

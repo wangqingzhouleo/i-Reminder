@@ -13,7 +13,7 @@ import CoreData
 class AddCategoryTableViewController: UITableViewController, UIPopoverPresentationControllerDelegate {
     
     @IBOutlet weak var doneButton: UIBarButtonItem!
-    var cellDescriptors: NSMutableArray!
+    var cellDescriptors: [[NSDictionary]]!
     var visibleCellsPerSection = [[Int]]()
     
     var categoryTitleCell: CategoryTitleCell!
@@ -219,7 +219,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         // Load cell descriptors from plist.
         if let path = Bundle.main.path(forResource: "CellDescriptor", ofType: "plist")
         {
-            cellDescriptors = NSMutableArray(contentsOfFile: path)
+            cellDescriptors = NSMutableArray(contentsOfFile: path) as! [[NSDictionary]]
             getIndexOfVisibleCells()
             tableView.reloadData()
         }
@@ -234,7 +234,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         {
             var visibleRows = [Int]()
             
-            for row in 0...((currentSectionCells as! [[String: AnyObject]]).count - 1)
+            for row in 0 ..< currentSectionCells.count
             {
                 if currentSectionCells[row]["isVisible"] as! Bool == true // Add filter for valid visa here
                 {
@@ -249,7 +249,7 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
     func getCellDescriptorForIndexPath(_ indexPath: IndexPath) -> [String: AnyObject] {
         // Get cell descriptor for a particular index path.
         let indexOfVisibleRow = visibleCellsPerSection[indexPath.section][indexPath.row]
-        let cellDescriptor = (cellDescriptors[indexPath.section] as! NSArray)[indexOfVisibleRow] as! [String: AnyObject]
+        let cellDescriptor = cellDescriptors[indexPath.section][indexOfVisibleRow] as! [String: AnyObject]
         return cellDescriptor
     }
     
@@ -342,14 +342,14 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
             // Add new item into core data as well as temporary list
             let category = NSEntityDescription.insertNewObject(forEntityName: "Category", into: managedObject) as! Category
             category.title = title
-            category.color = NSKeyedArchiver.archivedData(withRootObject: color)
+            category.color = NSKeyedArchiver.archivedData(withRootObject: color!)
             category.annotationTitle = annotationTitle
-            category.latitude = NSNumber(latitude)
-            category.longitude = NSNumber(longitude)
+            category.latitude = NSNumber(value: latitude)
+            category.longitude = NSNumber(value: longitude)
             category.remindMe = remindMe as NSNumber
-            category.remindRadius = remindRadius as! NSNumber
-            category.remindMethod = remindMethod as! NSNumber
-            category.index = NSNumber(tmpCategoryList.count)
+            category.remindRadius = remindRadius as NSNumber?
+            category.remindMethod = remindMethod as NSNumber?
+            category.index = NSNumber(value: tmpCategoryList.count)
             category.completed = false
             tmpCategoryList.append(category)
         }
@@ -357,13 +357,13 @@ class AddCategoryTableViewController: UITableViewController, UIPopoverPresentati
         {
             // Otherwise modify the category selected by a user.
             categoryToEdit?.title = title
-            categoryToEdit?.color = NSKeyedArchiver.archivedData(withRootObject: color)
+            categoryToEdit?.color = NSKeyedArchiver.archivedData(withRootObject: color!)
             categoryToEdit?.annotationTitle = annotationTitle
-            categoryToEdit?.latitude = NSNumber(latitude)
-            categoryToEdit?.longitude = NSNumber(longitude)
+            categoryToEdit?.latitude = NSNumber(value: latitude)
+            categoryToEdit?.longitude = NSNumber(value: longitude)
             categoryToEdit?.remindMe = remindMe as NSNumber
-            categoryToEdit?.remindRadius = remindRadius as! NSNumber
-            categoryToEdit?.remindMethod = remindMethod as! NSNumber
+            categoryToEdit?.remindRadius = remindRadius as NSNumber?
+            categoryToEdit?.remindMethod = remindMethod as NSNumber?
         }
         
         saveData()

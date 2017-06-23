@@ -77,7 +77,7 @@ func resetCategoryListOrder()
 {
     for i in 0..<tmpCategoryList.count
     {
-        tmpCategoryList[i].index = NSNumber(i)
+        tmpCategoryList[i].index = NSNumber(value: i)
     }
 }
 

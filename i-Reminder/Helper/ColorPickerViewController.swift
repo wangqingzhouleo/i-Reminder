@@ -44,7 +44,7 @@ class ColorPickerViewController: UIViewController, UICollectionViewDelegate, UIC
     
     // This function converts from HTML colors (hex strings of the form '#ffffff') to UIColors
     func hexStringToUIColor (_ hex:String) -> UIColor {
-        var cString:String = hex.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet() as NSCharacterSet).uppercased()
+        var cString:String = hex.trimmingCharacters(in: NSCharacterSet.whitespacesAndNewlines as CharacterSet).uppercased()
         
         if (cString.hasPrefix("#")) {
             cString = cString.substring(from: cString.characters.index(cString.startIndex, offsetBy: 1))

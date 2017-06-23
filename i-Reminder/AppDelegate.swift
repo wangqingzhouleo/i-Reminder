@@ -157,8 +157,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                 default:
                     id += "left \(category.annotationTitle)<$>\(category.title)"
                 }
-                let coordinate = CLLocationCoordinate2D(latitude: category.latitude as Double, longitude: category.longitude as Double)
-                let geofence = CLCircularRegion(center: coordinate, radius: category.remindRadius! as Double, identifier: id)
+                let coordinate = CLLocationCoordinate2D(latitude: category.latitude as! Double, longitude: category.longitude as! Double)
+                let geofence = CLCircularRegion(center: coordinate, radius: category.remindRadius! as! Double, identifier: id)
                 locationManager.startMonitoring(for: geofence)
             }
         }

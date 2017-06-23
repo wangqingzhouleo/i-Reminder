@@ -12,7 +12,7 @@ import CoreData
 class AddReminderTableViewController: UITableViewController {
     
     @IBOutlet weak var doneButton: UIBarButtonItem!
-    var cellDescriptors: NSMutableArray!
+    var cellDescriptors: [[NSDictionary]]!
     var visibleCellsPerSection = [[Int]]()
     
     var reminderTitleCell: ReminderTitleCell!
@@ -118,7 +118,7 @@ class AddReminderTableViewController: UITableViewController {
         // Load cell descriptors from plist.
         if let path = Bundle.main.path(forResource: "AddReminderCellDescriptor", ofType: "plist")
         {
-            cellDescriptors = NSMutableArray(contentsOfFile: path)
+            cellDescriptors = NSMutableArray(contentsOfFile: path) as! [[NSDictionary]]
             getIndexOfVisibleCells()
             tableView.reloadData()
         }
@@ -133,7 +133,7 @@ class AddReminderTableViewController: UITableViewController {
         {
             var visibleRows = [Int]()
             
-            for row in 0...((currentSectionCells as! [[String: AnyObject]]).count - 1)
+            for row in 0 ..< currentSectionCells.count
             {
                 if currentSectionCells[row]["isVisible"] as! Bool == true // Add filter for valid visa here
                 {
@@ -148,7 +148,7 @@ class AddReminderTableViewController: UITableViewController {
     func getCellDescriptorForIndexPath(_ indexPath: IndexPath) -> [String: AnyObject] {
         // Get cell descriptor for a particular index path.
         let indexOfVisibleRow = visibleCellsPerSection[indexPath.section][indexPath.row]
-        let cellDescriptor = (cellDescriptors[indexPath.section] as! NSArray)[indexOfVisibleRow] as! [String: AnyObject]
+        let cellDescriptor = cellDescriptors[indexPath.section][indexOfVisibleRow] as! [String: AnyObject]
         return cellDescriptor
     }
     
@@ -228,7 +228,7 @@ class AddReminderTableViewController: UITableViewController {
             reminder.title = title
             reminder.note = note?.characters.count == 0 ? nil : note
             reminder.hasDueDate = hasDueDate as NSNumber
-            reminder.dueDate = dueDate as! NSDate
+            reminder.dueDate = dueDate
             reminder.completed = false
             
             let category = tmpCategoryList[delegate!.selectedCategoryIndexPath!.row]

@@ -82,7 +82,6 @@ class TabBarViewController: UITabBarController, UIPopoverPresentationControllerD
         master.setEditing(!master.tableView.isEditing, animated: true)
         editButton.style = editButton.style == .plain ? .done : .plain
         editButton.title = editButton.title == "Edit" ? "Done" : "Edit"
-        editButtonItem
     }
 
     @IBAction func addCategory(_ sender: UIBarButtonItem) {
