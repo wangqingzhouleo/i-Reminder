@@ -10,6 +10,11 @@ import UIKit
 import MapKit
 import CoreData
 
+extension UITableViewController {
+    var cellDescriptors: [[NSDictionary]]!
+    var visibleCellsPerSection = [[Int]]()
+}
+
 class AddCategoryTableViewController: UITableViewController, UIPopoverPresentationControllerDelegate {
     
     @IBOutlet weak var doneButton: UIBarButtonItem!
